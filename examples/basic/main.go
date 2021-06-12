@@ -22,9 +22,9 @@ func cameraTick(t float64) (position, lookat vec.Vec3) {
 
 func main() {
 	options := gomarch.Options{
-		FrameCount: 120,
+		FrameCount: 60,
 		DeltaTime:  1000.0 / 60.0,
-		Viewport:   image.Rect(0, 0, 160, 90),
+		Viewport:   image.Rect(0, 0, 256, 128),
 		FOV:        0.46,
 
 		SDF:        sdf,

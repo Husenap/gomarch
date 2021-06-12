@@ -45,6 +45,24 @@ func doRayMarch(ro, rd vec.Vec3, o *Options) float64 {
 	return d
 }
 
+const (
+	e = 0.0003
+)
+
+var e1 = vec.New(e, -e, -e)
+var e2 = vec.New(-e, -e, e)
+var e3 = vec.New(-e, e, -e)
+var e4 = vec.New(e, e, e)
+
+func calcNormal(p vec.Vec3, o *Options) vec.Vec3 {
+	return vec.Normalize(
+		vec.Addn(
+			vec.Scale(e1, o.SDF(vec.Add(p, e1))),
+			vec.Scale(e2, o.SDF(vec.Add(p, e2))),
+			vec.Scale(e3, o.SDF(vec.Add(p, e3))),
+			vec.Scale(e4, o.SDF(vec.Add(p, e4)))))
+}
+
 func doRender(rc RenderContext) vec.Vec3 {
 	ro := rc.cam.GetPosition()
 	rd := rc.cam.GetRayDirection(rc.u, rc.v)
@@ -56,9 +74,13 @@ func doRender(rc RenderContext) vec.Vec3 {
 	}
 
 	p := vec.Add(ro, vec.Scale(rd, d))
-	p.Z *= -1
+	n := calcNormal(p, rc.o)
 
-	return p
+	diffuse := vec.Dot(n, vec.Normalize(vec.New(1, 1, -1)))
+
+	light := diffuse
+
+	return vec.Scale(vec.New(0.4, 0.8, 0.95), light)
 }
 
 func Render(o Options, out io.Writer) {
@@ -81,7 +103,7 @@ func Render(o Options, out io.Writer) {
 				u := float64(x) / width
 				v := float64(y) / height
 				u = u*2 - 1
-				v = v*2 - 1
+				v = -(v*2 - 1)
 				u *= width / height
 
 				rc := RenderContext{
