@@ -3,7 +3,7 @@ package camera
 import "github.com/husenap/gomarch/gomarch/vec"
 
 type Camera struct {
-	FOV      float32
+	FOV      float64
 	position vec.Vec3
 	right    vec.Vec3
 	up       vec.Vec3
@@ -20,7 +20,7 @@ func (c *Camera) Update(position, lookat vec.Vec3) {
 func (c *Camera) GetPosition() vec.Vec3 {
 	return c.position
 }
-func (c *Camera) GetRayDirection(u, v float32) vec.Vec3 {
+func (c *Camera) GetRayDirection(u, v float64) vec.Vec3 {
 	return vec.Normalize(
 		vec.Addn(
 			c.forward,
