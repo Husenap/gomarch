@@ -1,10 +1,11 @@
 package main
 
 import (
+	"image"
 	"image/color"
 	"os"
 
-	"github.com/husenap/go-raymarching/raymarching"
+	"github.com/husenap/gomarch/gomarch"
 )
 
 func generatePalette() color.Palette {
@@ -20,12 +21,13 @@ func sdf(x, y int) int {
 }
 
 func main() {
-	options := raymarching.Options{
+	options := gomarch.Options{
 		Palette:    generatePalette(),
 		FrameCount: 64,
 		DeltaTime:  100.0,
 		SDF:        sdf,
+		Viewport:   image.Rect(0, 0, 128, 128),
 	}
 
-	raymarching.Render(options, os.Stdout)
+	gomarch.Render(options, os.Stdout)
 }

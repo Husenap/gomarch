@@ -1,4 +1,4 @@
-package raymarching
+package gomarch
 
 import (
 	"fmt"
@@ -13,11 +13,12 @@ type Options struct {
 	FrameCount int
 	DeltaTime  float32
 	SDF        func(x, y int) int
+	Viewport   image.Rectangle
 }
 
 func Render(o Options, out io.Writer) {
+	rect := o.Viewport
 	animation := gif.GIF{LoopCount: 0}
-	rect := image.Rect(0, 0, 64, 64)
 
 	for i := 0; i < o.FrameCount; i++ {
 		frame := image.NewPaletted(rect, o.Palette)
