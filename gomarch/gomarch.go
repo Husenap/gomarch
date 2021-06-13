@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/husenap/gomarch/gomarch/camera"
+	"github.com/husenap/gomarch/gomarch/util"
 	"github.com/husenap/gomarch/gomarch/vec"
 )
 
@@ -30,14 +31,20 @@ type RenderContext struct {
 	o   *Options
 }
 
+const (
+	MAX_STEPS    = 64
+	SURFACE_DIST = 0.01
+	MAX_DIST     = 50.0
+)
+
 func doRayMarch(ro, rd vec.Vec3, o *Options) float64 {
 	d := float64(0)
 
-	for i := 0; i < 64; i++ {
+	for i := 0; i < MAX_STEPS; i++ {
 		p := vec.Add(ro, vec.Scale(rd, d))
 		hit := o.SDF(p)
 		d += hit
-		if hit < 0.001 || d > 100 {
+		if hit < SURFACE_DIST || d > MAX_DIST {
 			break
 		}
 	}
@@ -69,18 +76,28 @@ func doRender(rc RenderContext) vec.Vec3 {
 
 	d := doRayMarch(ro, rd, rc.o)
 
-	if d > 100 {
+	if d > MAX_DIST {
 		return vec.FromScalar(0)
 	}
 
 	p := vec.Add(ro, vec.Scale(rd, d))
 	n := calcNormal(p, rc.o)
 
-	diffuse := vec.Dot(n, vec.Normalize(vec.New(1, 1, -1)))
+	albedo := vec.FromScalar(0.18)
 
-	light := diffuse
+	sunDif := util.Saturate(vec.Dot(n, vec.New(0.8, 0.4, 0.2)))
+	skyDif := util.Saturate(0.5 + 0.5*vec.Dot(n, vec.New(0, 1, 0)))
+	bouDif := util.Saturate(0.5 + 0.5*vec.Dot(n, vec.New(0, -1, 0)))
 
-	return vec.Scale(vec.New(0.4, 0.8, 0.95), light)
+	res := vec.Addn(
+		vec.Scale(vec.Mul(albedo, vec.New(7.0, 4.5, 3.0)), sunDif),
+		vec.Scale(vec.Mul(albedo, vec.New(0.5, 0.8, 0.9)), skyDif),
+		vec.Scale(vec.Mul(albedo, vec.New(0.7, 0.3, 0.2)), bouDif),
+	)
+
+	res = vec.Pow(res, vec.FromScalar(0.4545))
+
+	return res
 }
 
 func Render(o Options, out io.Writer) {
@@ -100,11 +117,8 @@ func Render(o Options, out io.Writer) {
 		renderLine := func(y int) {
 			defer wg.Done()
 			for x := rect.Min.X; x < rect.Max.X; x++ {
-				u := float64(x) / width
-				v := float64(y) / height
-				u = u*2 - 1
-				v = -(v*2 - 1)
-				u *= width / height
+				u := ((float64(x)/width)*2.0 - 1.0) * (width / height)
+				v := ((float64(y)/height)*2.0 - 1.0) * -1.0
 
 				rc := RenderContext{
 					u:   u,

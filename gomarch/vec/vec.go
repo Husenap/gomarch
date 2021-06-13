@@ -20,6 +20,9 @@ func FromScalar(x float64) Vec3 {
 func Unit() Vec3 {
 	return Vec3{1, 1, 1}
 }
+func Zero() Vec3 {
+	return Vec3{0, 0, 0}
+}
 
 func Addn(vs ...Vec3) Vec3 {
 	var out Vec3
@@ -35,6 +38,12 @@ func Add(lhs, rhs Vec3) Vec3 {
 }
 func Sub(lhs, rhs Vec3) Vec3 {
 	return Vec3{lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z}
+}
+func Mul(lhs, rhs Vec3) Vec3 {
+	return Vec3{lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z}
+}
+func Pow(lhs, rhs Vec3) Vec3 {
+	return Vec3{math.Pow(lhs.X, rhs.X), math.Pow(lhs.Y, rhs.Y), math.Pow(lhs.Z, rhs.Z)}
 }
 func Scale(v Vec3, f float64) Vec3 {
 	return Vec3{v.X * f, v.Y * f, v.Z * f}
