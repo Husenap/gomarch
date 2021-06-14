@@ -1,7 +1,6 @@
 package main
 
 import (
-	"image"
 	"math"
 	"os"
 
@@ -22,7 +21,7 @@ func sdf(position vec.Vec3) float64 {
 	pMod(&position.X, 3.0)
 	pMod(&position.Z, 3.0)
 	d := vec.Length(position) - 1.0
-	//d = math.Min(d, position.Y+1.0)
+	d = math.Min(d, position.Y+1.0)
 	return d
 }
 
@@ -34,11 +33,12 @@ func cameraTick(t float64) (position, lookat vec.Vec3) {
 }
 
 func main() {
-	resolutionScale := 0.25
+	resolutionScale := 0.5
 	options := gomarch.Options{
 		FrameCount: 60,
 		DeltaTime:  1000.0 / 60.0,
-		Viewport:   image.Rect(0, 0, int(1600*resolutionScale), int(900*resolutionScale)),
+		Width:      int(1920 * resolutionScale),
+		Height:     int(1080 * resolutionScale),
 		FOV:        0.9,
 
 		SDF:        sdf,

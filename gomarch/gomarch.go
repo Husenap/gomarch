@@ -17,7 +17,8 @@ import (
 type Options struct {
 	FrameCount int
 	DeltaTime  float64
-	Viewport   image.Rectangle
+	Width      int
+	Height     int
 	FOV        float64
 
 	SDF        func(v vec.Vec3) float64
@@ -101,21 +102,27 @@ func doRender(rc RenderContext) vec.Vec3 {
 }
 
 func Render(o Options, out io.Writer) {
-	rect := o.Viewport
+	rect := image.Rect(0, 0, o.Width, o.Height)
 	width, height := float64(rect.Max.X-rect.Min.X), float64(rect.Max.Y-rect.Min.Y)
 	animation := gif.GIF{LoopCount: 0}
-	t := 0.0
 	wg := sync.WaitGroup{}
-	cam := camera.Camera{FOV: o.FOV}
 
-	for i := 0; i < o.FrameCount; i++ {
+	animation.Delay = make([]int, o.FrameCount)
+	animation.Image = make([]*image.Paletted, o.FrameCount)
+
+	renderFrame := func(i int) {
+		defer wg.Done()
+		wg.Add(1)
+
+		t := (o.DeltaTime / 1000.0) * float64(i)
+
 		frame := image.NewRGBA(rect)
 		palettedFrame := image.NewPaletted(rect, palette.Plan9)
 
+		cam := camera.Camera{FOV: o.FOV}
 		cam.Update(o.CameraTick(t))
 
-		renderLine := func(y int) {
-			defer wg.Done()
+		for y := rect.Min.Y; y < rect.Max.Y; y++ {
 			for x := rect.Min.X; x < rect.Max.X; x++ {
 				u := ((float64(x)/width)*2.0 - 1.0) * (width / height)
 				v := ((float64(y)/height)*2.0 - 1.0) * -1.0
@@ -129,19 +136,19 @@ func Render(o Options, out io.Writer) {
 				frame.SetRGBA(x, y, vec.ToColor(doRender(rc)))
 			}
 		}
-		for y := rect.Min.Y; y < rect.Max.Y; y++ {
-			wg.Add(1)
-			go renderLine(y)
-		}
-		wg.Wait()
 
 		draw.FloydSteinberg.Draw(palettedFrame, rect, frame, image.Point{0, 0})
 
-		animation.Delay = append(animation.Delay, int(o.DeltaTime/10.0))
-		animation.Image = append(animation.Image, palettedFrame)
+		animation.Delay[i] = int(o.DeltaTime / 10.0)
+		animation.Image[i] = palettedFrame
 
-		t += o.DeltaTime / 1000.0
 	}
+
+	for i := 0; i < o.FrameCount; i++ {
+		go renderFrame(i)
+	}
+
+	wg.Wait()
 
 	err := gif.EncodeAll(out, &animation)
 	if err != nil {
