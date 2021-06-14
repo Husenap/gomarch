@@ -1,1 +1,7 @@
+title: Gomarch
+author: Husenap
+description: >
+  Gomarch is a library written in go that lets anyone render
+  a raymarching scene to a GIF file.
+
 theme: jekyll-theme-cayman
