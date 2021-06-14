@@ -33,7 +33,7 @@ func cameraTick(t float64) (position, lookat vec.Vec3) {
 }
 
 func main() {
-	resolutionScale := 0.5
+	resolutionScale := 0.25
 	options := gomarch.Options{
 		FrameCount: 60,
 		DeltaTime:  1000.0 / 60.0,
