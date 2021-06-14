@@ -1,37 +1,47 @@
-## Welcome to GitHub Pages
+## Basic Example
 
-You can use the [editor on GitHub](https://github.com/Husenap/gomarch/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+`main.go`
+```go
+package main
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+import (
+	"image"
+	"math"
+	"os"
 
-### Markdown
+	"github.com/husenap/gomarch/gomarch"
+	"github.com/husenap/gomarch/gomarch/vec"
+)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+func sdf(position vec.Vec3) float64 {
+	d := vec.Length(position) - 1.0
+	return d
+}
 
-```markdown
-Syntax highlighted code block
+func cameraTick(t float64) (position, lookat vec.Vec3) {
+	a := t * 2.0 * math.Pi
+	position = vec.Scale(vec.New(math.Cos(a), 0.0, math.Sin(a)), 5.0)
+	lookat = vec.Zero()
+	return
+}
 
-# Header 1
-## Header 2
-### Header 3
+func main() {
+	options := gomarch.Options{
+		FrameCount: 60,
+		DeltaTime:  1000.0 / 60.0,
+		Viewport:   image.Rect(0, 0, 160, 90),
+		FOV:        0.46,
 
-- Bulleted
-- List
+		SDF:        sdf,
+		CameraTick: cameraTick,
+	}
 
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+	gomarch.Render(options, os.Stdout)
+}
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+`Terminal`
+```bash
+$ go run main.go > out.gif
+```
 
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/Husenap/gomarch/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
